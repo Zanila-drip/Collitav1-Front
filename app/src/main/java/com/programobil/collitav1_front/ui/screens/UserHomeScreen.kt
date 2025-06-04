@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.programobil.collitav1_front.ui.Routes
+import com.programobil.collitav1_front.ui.navigation.MainScreen
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.compose.animation.AnimatedVisibility
@@ -45,7 +45,7 @@ fun UserHomeScreen(
             TopAppBar(
                 title = { Text("Inicio") },
                 actions = {
-                    IconButton(onClick = { navController.navigate(Routes.DATOS) }) {
+                    IconButton(onClick = { navController.navigate(MainScreen.Datos.route) }) {
                         Icon(Icons.Default.Person, contentDescription = "Perfil")
                     }
                 }
@@ -63,13 +63,13 @@ fun UserHomeScreen(
                     icon = { Icon(Icons.Default.History, contentDescription = "Historial") },
                     label = { Text("Historial") },
                     selected = false,
-                    onClick = { navController.navigate(Routes.HISTORIAL) }
+                    onClick = { navController.navigate(MainScreen.HistorialPersonal.route) }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Datos") },
                     label = { Text("Datos") },
                     selected = false,
-                    onClick = { navController.navigate(Routes.DATOS) }
+                    onClick = { navController.navigate(MainScreen.Datos.route) }
                 )
             }
         }
@@ -178,7 +178,7 @@ fun UserHomeScreen(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
-                onClick = { navController.navigate(Routes.TRABAJO) }
+                onClick = { /* TODO: Implementar pantalla de trabajo */ }
             ) {
                 Row(
                     modifier = Modifier

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.programobil.collitav1_front.network.LoginRequest
 import com.programobil.collitav1_front.network.LoginResponse
 import com.programobil.collitav1_front.network.RetrofitClient
+import com.programobil.collitav1_front.security.TokenManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,6 +26,9 @@ class LoginViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = RetrofitClient.api.login(LoginRequest(username, password))
+                response.token?.let { token ->
+                    TokenManager.saveToken(token)
+                }
                 _loginState.value = LoginState.Success(response)
             } catch (e: Exception) {
                 _loginState.value = LoginState.Error(e.message ?: "Error desconocido")

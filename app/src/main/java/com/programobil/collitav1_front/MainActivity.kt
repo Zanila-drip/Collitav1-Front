@@ -7,12 +7,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.programobil.collitav1_front.ui.MainNavigation
+import com.programobil.collitav1_front.ui.navigation.MainNavigation
 import com.programobil.collitav1_front.ui.theme.Collitav1FrontTheme
+import com.programobil.collitav1_front.security.TokenManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Inicializar TokenManager
+        TokenManager.initialize(applicationContext)
+        
         setContent {
             Collitav1FrontTheme {
                 Surface(
