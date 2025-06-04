@@ -33,35 +33,15 @@ object TokenManager {
 
     fun saveToken(token: String) {
         Log.d("TokenManager", "Guardando token")
-        try {
-            prefs.edit().putString(TOKEN_KEY, token).apply()
-            Log.d("TokenManager", "Token guardado correctamente")
-        } catch (e: Exception) {
-            Log.e("TokenManager", "Error al guardar token", e)
-            throw e
-        }
+        prefs.edit().putString(TOKEN_KEY, token).apply()
     }
 
     fun getToken(): String? {
-        Log.d("TokenManager", "Obteniendo token")
-        try {
-            val token = prefs.getString(TOKEN_KEY, null)
-            Log.d("TokenManager", if (token != null) "Token encontrado" else "No hay token guardado")
-            return token
-        } catch (e: Exception) {
-            Log.e("TokenManager", "Error al obtener token", e)
-            throw e
-        }
+        return prefs.getString(TOKEN_KEY, null)
     }
 
     fun clearToken() {
         Log.d("TokenManager", "Limpiando token")
-        try {
-            prefs.edit().remove(TOKEN_KEY).apply()
-            Log.d("TokenManager", "Token limpiado correctamente")
-        } catch (e: Exception) {
-            Log.e("TokenManager", "Error al limpiar token", e)
-            throw e
-        }
+        prefs.edit().remove(TOKEN_KEY).apply()
     }
 } 

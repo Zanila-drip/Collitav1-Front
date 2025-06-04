@@ -28,17 +28,30 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.ExperimentalComposeUiApi
+import com.programobil.collitav1_front.ui.viewmodels.TrabajoViewModel
+import com.programobil.collitav1_front.ui.viewmodels.TrabajoState
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun UserHomeScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: TrabajoViewModel
 ) {
     var current by remember { mutableStateOf(LocalDateTime.now()) }
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
-    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
     val fecha = current.format(dateFormatter)
-    val hora = current.format(timeFormatter)
+    
+    // Observar el estado de los trabajos
+    val trabajoState by viewModel.trabajoState.collectAsState()
+    
+    // Actualizar la fecha cada minuto
+    LaunchedEffect(Unit) {
+        while (true) {
+            current = LocalDateTime.now()
+            delay(60000) // 1 minuto
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -81,7 +94,7 @@ fun UserHomeScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Fila superior con saludo y fecha/hora
+            // Fila superior con saludo y fecha
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -125,7 +138,16 @@ fun UserHomeScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "0 kg",
+                            text = when (trabajoState) {
+                                is TrabajoState.Success -> {
+                                    val trabajos = (trabajoState as TrabajoState.Success).trabajos
+                                    val cosechaHoy = trabajos
+                                        .filter { it.fecha == fecha }
+                                        .sumOf { it.cosecha.split(" ")[0].toDoubleOrNull() ?: 0.0 }
+                                    "$cosechaHoy kg"
+                                }
+                                else -> "0 kg"
+                            },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -158,7 +180,16 @@ fun UserHomeScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "$0.00",
+                            text = when (trabajoState) {
+                                is TrabajoState.Success -> {
+                                    val trabajos = (trabajoState as TrabajoState.Success).trabajos
+                                    val gananciaHoy = trabajos
+                                        .filter { it.fecha == fecha }
+                                        .sumOf { it.precioAproximado }
+                                    "$$gananciaHoy"
+                                }
+                                else -> "$0.00"
+                            },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -178,7 +209,7 @@ fun UserHomeScreen(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
-                onClick = { /* TODO: Implementar pantalla de trabajo */ }
+                onClick = { navController.navigate(MainScreen.Trabajo.route) }
             ) {
                 Row(
                     modifier = Modifier

@@ -3,8 +3,7 @@ package com.programobil.collitav1_front.ui.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.programobil.collitav1_front.network.ApiService
-import com.programobil.collitav1_front.network.UserProfileResponse
+import com.programobil.collitav1_front.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,14 +37,14 @@ class UserViewModel : ViewModel() {
                 _isLoading.value = true
                 Log.d("UserViewModel", "Realizando llamada a la API")
                 
-                // Por ahora, simulamos una respuesta exitosa
+                val response = RetrofitClient.api.getUserProfile("Bearer $token")
                 _userData.value = UserData(
-                    nombre = "Usuario",
-                    apellidoPaterno = "Apellido",
-                    apellidoMaterno = "Materno",
-                    curp = "CURP123456",
-                    telefono = "1234567890",
-                    email = "usuario@ejemplo.com"
+                    nombre = response.nombre,
+                    apellidoPaterno = response.apellidoPaterno,
+                    apellidoMaterno = response.apellidoMaterno,
+                    curp = response.curp,
+                    telefono = response.telefono,
+                    email = response.email
                 )
                 Log.d("UserViewModel", "Datos del usuario actualizados correctamente")
                 

@@ -21,7 +21,9 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
-    var apellido by remember { mutableStateOf("") }
+    var apellidoPaterno by remember { mutableStateOf("") }
+    var apellidoMaterno by remember { mutableStateOf("") }
+    var curp by remember { mutableStateOf("") }
     var telefono by remember { mutableStateOf("") }
     
     val authState by viewModel.authState.collectAsState()
@@ -46,28 +48,9 @@ fun RegisterScreen(
         )
 
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text("Usuario") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Correo electrónico") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
+            value = curp,
+            onValueChange = { curp = it },
+            label = { Text("CURP") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
@@ -83,9 +66,18 @@ fun RegisterScreen(
         )
 
         OutlinedTextField(
-            value = apellido,
-            onValueChange = { apellido = it },
-            label = { Text("Apellido") },
+            value = apellidoPaterno,
+            onValueChange = { apellidoPaterno = it },
+            label = { Text("Apellido Paterno") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        )
+
+        OutlinedTextField(
+            value = apellidoMaterno,
+            onValueChange = { apellidoMaterno = it },
+            label = { Text("Apellido Materno") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
@@ -97,17 +89,29 @@ fun RegisterScreen(
             label = { Text("Teléfono") },
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        )
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Contraseña") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier
+                .fillMaxWidth()
                 .padding(bottom = 24.dp)
         )
 
         Button(
             onClick = {
                 viewModel.register(
-                    username = username,
-                    email = email,
+                    username = curp,
+                    email = "${curp}@mail.com",
                     password = password,
                     nombre = nombre,
-                    apellido = apellido,
+                    apellidoPaterno = apellidoPaterno,
+                    apellidoMaterno = apellidoMaterno,
+                    curp = curp,
                     telefono = telefono
                 )
             },

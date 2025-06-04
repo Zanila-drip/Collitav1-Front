@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,11 +19,14 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 import kotlinx.coroutines.delay
+import com.programobil.collitav1_front.data.model.Trabajo
+import com.programobil.collitav1_front.ui.viewmodels.TrabajoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrabajoScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: TrabajoViewModel
 ) {
     var isWorking by remember { mutableStateOf(false) }
     var startTime by remember { mutableStateOf<LocalTime?>(null) }
@@ -31,6 +35,7 @@ fun TrabajoScreen(
     var elapsedTime by remember { mutableStateOf("00:00:00") }
     var cosechaTotal by remember { mutableStateOf("") }
     var showCosechaDialog by remember { mutableStateOf(false) }
+    var precioAproximado by remember { mutableStateOf("") }
 
     // Efecto para actualizar el contador
     LaunchedEffect(isWorking, showTimer) {
@@ -54,7 +59,7 @@ fun TrabajoScreen(
                 title = { Text("Trabajo Actual") },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Regresar")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar")
                     }
                 }
             )
@@ -287,10 +292,18 @@ fun TrabajoScreen(
             confirmButton = {
                 Button(
                     onClick = {
+                        val trabajo = Trabajo(
+                            fecha = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                            horaInicio = startTime?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "",
+                            horaFin = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
+                            tiempoTotal = elapsedTime,
+                            cosecha = cosechaTotal,
+                            precioAproximado = precioAproximado.toDoubleOrNull() ?: 0.0
+                        )
+                        viewModel.guardarTrabajo(trabajo)
                         isWorking = false
                         startTime = null
                         showStopDialog = false
-                        // TODO: Guardar la sesión en el historial
                         navController.navigateUp()
                     },
                     colors = ButtonDefaults.buttonColors(

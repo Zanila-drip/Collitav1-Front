@@ -213,10 +213,12 @@ fun RegistroScreen(
                         registroViewModel.registrarUsuario(
                             RegisterRequest(
                                 username = curp.text,
-                                email = "${curp.text}@mail.com", // Puedes cambiar esto si tienes un campo de email
+                                email = "${curp.text}@mail.com", // Temporalmente usamos el CURP como email
                                 password = contrasena.text,
                                 nombre = nombre.text,
-                                apellido = "${apellidoPaterno.text} ${apellidoMaterno.text}",
+                                apellidoPaterno = apellidoPaterno.text,
+                                apellidoMaterno = apellidoMaterno.text,
+                                curp = curp.text,
                                 telefono = telefono.text
                             )
                         )
