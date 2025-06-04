@@ -14,10 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -29,6 +31,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 import com.programobil.collitav1_front.ui.Routes
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 data class HistorialItem(
     val fecha: LocalDate,
@@ -164,90 +167,141 @@ fun HistorialCard(
     item: HistorialItem,
     onShowDetails: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+    var offsetX by remember { mutableStateOf(0f) }
+    val animatedOffsetX by animateFloatAsState(
+        targetValue = offsetX,
+        label = "offsetX"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
-        Column(
+        // Fondo rojo para la acción de eliminar
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .height(120.dp)
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp),
+            contentAlignment = Alignment.CenterEnd
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            IconButton(
+                onClick = { /* Acción de eliminar */ },
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(
+                        color = Color.Red,
+                        shape = RoundedCornerShape(24.dp)
+                    )
             ) {
-                Column {
-                    Text(
-                        text = item.fecha.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("es", "ES")),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = item.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-                Text(
-                    text = "$${item.ganancia}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Eliminar",
+                    tint = Color.White
                 )
             }
+        }
 
-            Divider()
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+        // Tarjeta principal
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(animatedOffsetX.roundToInt(), 0) }
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            offsetX = if (offsetX < -100f) -200f else 0f
+                        },
+                        onHorizontalDrag = { _, dragAmount ->
+                            offsetX = (offsetX + dragAmount).coerceIn(-200f, 0f)
+                        }
+                    )
+                },
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column {
-                    Text(
-                        text = "Tiempo",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        text = item.tiempoTrabajo,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                Column {
-                    Text(
-                        text = "Cosecha",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        text = "${item.cosechaTotal}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                TextButton(
-                    onClick = onShowDetails,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Detalles",
-                        modifier = Modifier.size(20.dp)
+                    Column {
+                        Text(
+                            text = item.fecha.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("es", "ES")),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = item.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                    Text(
+                        text = item.ganancia,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Ver Detalles")
+                }
+
+                Divider()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = "Tiempo",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = item.tiempoTrabajo,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Column {
+                        Text(
+                            text = "Cosecha",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                        Text(
+                            text = item.cosechaTotal,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = onShowDetails,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Detalles",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Ver Detalles")
+                    }
                 }
             }
         }
