@@ -22,11 +22,12 @@ import androidx.navigation.compose.rememberNavController
 fun IdentificacionScreen(
     navController: NavController
 ) {
-    var curp by remember { mutableStateOf("") }
-    var nombre by remember { mutableStateOf("") }
-    var apellidoPaterno by remember { mutableStateOf("") }
-    var apellidoMaterno by remember { mutableStateOf("") }
-    var telefono by remember { mutableStateOf("") }
+    // Datos de ejemplo (en producción vendrían del backend)
+    val curp = "XAXX010101HDFXXX00"
+    val nombre = "Juan"
+    val apellidoPaterno = "Pérez"
+    val apellidoMaterno = "García"
+    val telefono = "5512345678"
 
     Scaffold(
         topBar = {
@@ -51,13 +52,10 @@ fun IdentificacionScreen(
             // Campo CURP
             OutlinedTextField(
                 value = curp,
-                onValueChange = { curp = it.uppercase() },
+                onValueChange = { },
                 label = { Text("CURP") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
+                enabled = false,
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Badge, contentDescription = "CURP")
@@ -67,13 +65,10 @@ fun IdentificacionScreen(
             // Campo Nombre
             OutlinedTextField(
                 value = nombre,
-                onValueChange = { nombre = it },
+                onValueChange = { },
                 label = { Text("Nombre(s)") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
+                enabled = false,
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = "Nombre")
@@ -83,13 +78,10 @@ fun IdentificacionScreen(
             // Campo Apellido Paterno
             OutlinedTextField(
                 value = apellidoPaterno,
-                onValueChange = { apellidoPaterno = it },
+                onValueChange = { },
                 label = { Text("Apellido Paterno") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
+                enabled = false,
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = "Apellido Paterno")
@@ -99,13 +91,10 @@ fun IdentificacionScreen(
             // Campo Apellido Materno
             OutlinedTextField(
                 value = apellidoMaterno,
-                onValueChange = { apellidoMaterno = it },
+                onValueChange = { },
                 label = { Text("Apellido Materno") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
+                enabled = false,
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Person, contentDescription = "Apellido Materno")
@@ -115,42 +104,25 @@ fun IdentificacionScreen(
             // Campo Teléfono
             OutlinedTextField(
                 value = telefono,
-                onValueChange = { 
-                    if (it.length <= 10) {
-                        telefono = it.filter { char -> char.isDigit() }
-                    }
-                },
+                onValueChange = { },
                 label = { Text("Teléfono") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Phone,
-                    imeAction = ImeAction.Done
-                ),
+                enabled = false,
                 singleLine = true,
                 leadingIcon = {
                     Icon(Icons.Default.Phone, contentDescription = "Teléfono")
-                },
-                placeholder = { Text("10 dígitos") }
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón de Guardar
-            Button(
-                onClick = { /* TODO: Implementar guardado */ },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = curp.isNotBlank() && nombre.isNotBlank() && 
-                         apellidoPaterno.isNotBlank() && apellidoMaterno.isNotBlank() && 
-                         telefono.length == 10
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Save,
-                    contentDescription = "Guardar",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Guardar Información")
-            }
+            // Mensaje informativo
+            Text(
+                text = "Esta información es proporcionada por el sistema y no puede ser modificada.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
     }
 }
