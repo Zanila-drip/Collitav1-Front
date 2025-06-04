@@ -19,7 +19,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.programobil.collitav1_front.network.RegisterRequest
 import com.programobil.collitav1_front.ui.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,6 +38,25 @@ fun RegistroScreen(
     var confirmarContrasena by remember { mutableStateOf(TextFieldValue("")) }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
+    val registroViewModel: RegistroViewModel = viewModel()
+    val registroState by registroViewModel.registroState.collectAsState()
+    var showError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(registroState) {
+        when (registroState) {
+            is RegistroState.Success -> {
+                showError = null
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.REGISTRO) { inclusive = true }
+                }
+                registroViewModel.resetState()
+            }
+            is RegistroState.Error -> {
+                showError = (registroState as RegistroState.Error).message
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -65,8 +86,6 @@ fun RegistroScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
-
-            // Campo de CURP
             OutlinedTextField(
                 value = curp,
                 onValueChange = { curp = it },
@@ -80,8 +99,6 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Campo de nombre
             OutlinedTextField(
                 value = nombre,
                 onValueChange = { nombre = it },
@@ -95,8 +112,6 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Campo de apellido paterno
             OutlinedTextField(
                 value = apellidoPaterno,
                 onValueChange = { apellidoPaterno = it },
@@ -110,8 +125,6 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Campo de apellido materno
             OutlinedTextField(
                 value = apellidoMaterno,
                 onValueChange = { apellidoMaterno = it },
@@ -125,8 +138,6 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Campo de teléfono
             OutlinedTextField(
                 value = telefono,
                 onValueChange = { telefono = it },
@@ -140,8 +151,6 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Campo de contraseña
             OutlinedTextField(
                 value = contrasena,
                 onValueChange = { contrasena = it },
@@ -165,8 +174,6 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Campo de confirmar contraseña
             OutlinedTextField(
                 value = confirmarContrasena,
                 onValueChange = { confirmarContrasena = it },
@@ -190,25 +197,45 @@ fun RegistroScreen(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline
                 )
             )
-
-            // Botón de registro
+            if (registroState is RegistroState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+            }
+            if (showError != null) {
+                Text(
+                    text = showError ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
             Button(
                 onClick = {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.REGISTRO) { inclusive = true }
+                    if (contrasena.text == confirmarContrasena.text) {
+                        registroViewModel.registrarUsuario(
+                            RegisterRequest(
+                                username = curp.text,
+                                email = "${curp.text}@mail.com", // Puedes cambiar esto si tienes un campo de email
+                                password = contrasena.text,
+                                nombre = nombre.text,
+                                apellido = "${apellidoPaterno.text} ${apellidoMaterno.text}",
+                                telefono = telefono.text
+                            )
+                        )
+                    } else {
+                        showError = "Las contraseñas no coinciden"
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                enabled = curp.text.isNotBlank() && 
-                         nombre.text.isNotBlank() && 
-                         apellidoPaterno.text.isNotBlank() && 
-                         apellidoMaterno.text.isNotBlank() && 
-                         telefono.text.isNotBlank() && 
-                         contrasena.text.isNotBlank() && 
-                         confirmarContrasena.text.isNotBlank(),
+                enabled = curp.text.isNotBlank() &&
+                         nombre.text.isNotBlank() &&
+                         apellidoPaterno.text.isNotBlank() &&
+                         apellidoMaterno.text.isNotBlank() &&
+                         telefono.text.isNotBlank() &&
+                         contrasena.text.isNotBlank() &&
+                         confirmarContrasena.text.isNotBlank() &&
+                         registroState !is RegistroState.Loading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )

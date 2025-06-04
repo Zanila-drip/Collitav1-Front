@@ -20,9 +20,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.programobil.collitav1_front.R
 import com.programobil.collitav1_front.ui.Routes
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +34,26 @@ fun LoginScreen(
     var curp by remember { mutableStateOf(TextFieldValue("")) }
     var contrasena by remember { mutableStateOf(TextFieldValue("")) }
     var isPasswordVisible by remember { mutableStateOf(false) }
+    val loginViewModel: LoginViewModel = viewModel()
+    val loginState by loginViewModel.loginState.collectAsState()
+    var showError by remember { mutableStateOf<String?>(null) }
+
+    // Navegación y manejo de estado
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is LoginState.Success -> {
+                showError = null
+                navController.navigate(Routes.HOME) {
+                    popUpTo(Routes.LOGIN) { inclusive = true }
+                }
+                loginViewModel.resetState()
+            }
+            is LoginState.Error -> {
+                showError = (loginState as LoginState.Error).message
+            }
+            else -> {}
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -114,18 +136,28 @@ fun LoginScreen(
                 )
             )
 
+            if (loginState is LoginState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.padding(8.dp))
+            }
+
+            if (showError != null) {
+                Text(
+                    text = showError ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
             // Botón de login
             Button(
                 onClick = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.LOGIN) { inclusive = true }
-                    }
+                    loginViewModel.login(curp.text, contrasena.text)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(12.dp),
-                enabled = curp.text.isNotBlank() && contrasena.text.isNotBlank(),
+                enabled = curp.text.isNotBlank() && contrasena.text.isNotBlank() && loginState !is LoginState.Loading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
