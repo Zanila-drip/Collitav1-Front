@@ -17,8 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.programobil.collitav1_front.ui.viewmodels.UserViewModel
-import com.programobil.collitav1_front.security.TokenManager
-import com.programobil.collitav1_front.ui.navigation.MainScreen
 import com.programobil.collitav1_front.di.AppModule
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,17 +29,9 @@ fun IdentificacionScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
+    // Cargar datos al iniciar la pantalla
     LaunchedEffect(Unit) {
-        val token = TokenManager.getToken()
-        if (token == null) {
-            // Si no hay token, redirigir al login
-            navController.navigate(MainScreen.Auth.route) {
-                popUpTo(MainScreen.Home.route) { inclusive = true }
-            }
-        } else {
-            // Si hay token, cargar los datos del usuario
-            viewModel.loadUserData(token)
-        }
+        viewModel.loadUserData("")
     }
 
     Scaffold(
