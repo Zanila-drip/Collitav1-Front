@@ -8,6 +8,7 @@ object Routes {
     const val DATOS = "datos"
     const val IDENTIFICACION = "identificacion"
     const val GANANCIAS = "ganancias"
+    const val TRABAJO = "trabajo"
     const val HISTORIAL_PERSONAL = "historial_personal"
     const val FINALIZAR = "finalizar"
 } 

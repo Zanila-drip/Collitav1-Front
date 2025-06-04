@@ -35,5 +35,8 @@ fun MainNavigation() {
         composable(Routes.GANANCIAS) {
             GananciasScreen(navController)
         }
+        composable(Routes.TRABAJO) {
+            TrabajoScreen(navController)
+        }
     }
 } 

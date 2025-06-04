@@ -17,15 +17,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 import com.programobil.collitav1_front.ui.Routes
+import kotlinx.coroutines.delay
 
 data class HistorialItem(
     val fecha: LocalDate,
@@ -41,20 +44,8 @@ data class HistorialItem(
 fun HistorialScreen(
     navController: NavController
 ) {
-    // Datos de ejemplo
-    val historialItems = remember {
-        List(7) { index ->
-            val fecha = LocalDate.now().minusDays(index.toLong())
-            HistorialItem(
-                fecha = fecha,
-                horaInicio = LocalTime.of(8, 0),
-                horaCierre = LocalTime.of(16, 30),
-                tiempoTrabajo = "${8 + index}h ${30 + index}m",
-                cosechaTotal = "${150 + (index * 10)} kg",
-                ganancia = "$${1500 + (index * 100)}.00"
-            )
-        }
-    }
+    var showDetails by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf<HistorialItem?>(null) }
 
     Scaffold(
         topBar = {
@@ -72,130 +63,129 @@ fun HistorialScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(historialItems) { item ->
-                HistorialCard(item = item)
+            items(getHistorialItems()) { item ->
+                HistorialCard(
+                    item = item,
+                    onShowDetails = {
+                        selectedItem = item
+                        showDetails = true
+                    }
+                )
             }
+        }
+
+        if (showDetails && selectedItem != null) {
+            AlertDialog(
+                onDismissRequest = { showDetails = false },
+                title = { Text("Detalles del Registro") },
+                text = {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        DetailRow(
+                            icon = Icons.Default.CalendarToday,
+                            label = "Fecha",
+                            value = selectedItem!!.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        )
+                        DetailRow(
+                            icon = Icons.Default.AccessTime,
+                            label = "Hora Inicio",
+                            value = selectedItem!!.horaInicio.format(DateTimeFormatter.ofPattern("HH:mm"))
+                        )
+                        DetailRow(
+                            icon = Icons.Default.AccessTime,
+                            label = "Hora Fin",
+                            value = selectedItem!!.horaCierre.format(DateTimeFormatter.ofPattern("HH:mm"))
+                        )
+                        DetailRow(
+                            icon = Icons.Default.Timer,
+                            label = "Tiempo Trabajado",
+                            value = selectedItem!!.tiempoTrabajo
+                        )
+                        DetailRow(
+                            icon = Icons.Default.LocalFlorist,
+                            label = "Cosecha Total",
+                            value = selectedItem!!.cosechaTotal
+                        )
+                        DetailRow(
+                            icon = Icons.Default.AttachMoney,
+                            label = "Ganancia",
+                            value = selectedItem!!.ganancia
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showDetails = false }) {
+                        Text("Cerrar")
+                    }
+                }
+            )
         }
     }
 }
 
 @Composable
-fun HistorialCard(item: HistorialItem) {
-    var offsetX by remember { mutableStateOf(0f) }
-    val animatedOffsetX by animateFloatAsState(
-        targetValue = offsetX,
-        label = "offsetX"
-    )
-    var showDetails by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
+fun DetailRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        // Opciones deslizables
-        Row(
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .fillMaxHeight()
-                .width(200.dp)
-        ) {
-            // Botón Generar Ticket
-            Button(
-                onClick = { /* TODO: Implementar generación de ticket */ },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(end = 4.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Receipt,
-                        contentDescription = "Generar Ticket",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Generar\nTicket",
-                        fontSize = 12.sp,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
-
-            // Botón Mostrar Detalles
-            Button(
-                onClick = { showDetails = true },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(start = 4.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary
-                )
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Mostrar Detalles",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Mostrar\nDetalles",
-                        fontSize = 12.sp,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            }
-        }
-
-        // Card principal
-        Card(
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x = animatedOffsetX.dp)
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            offsetX = if (offsetX < -100f) -200f else 0f
-                        },
-                        onHorizontalDrag = { _, dragAmount ->
-                            offsetX = (offsetX + dragAmount).coerceIn(-200f, 0f)
-                        }
-                    )
-                },
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HistorialCard(
+    item: HistorialItem,
+    onShowDetails: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Columna izquierda: Día y fecha
                 Column {
                     Text(
                         text = item.fecha.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("es", "ES")),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = item.fecha.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
@@ -203,111 +193,127 @@ fun HistorialCard(item: HistorialItem) {
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
+                Text(
+                    text = "$${item.ganancia}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-                // Columna derecha: Ganancia y flecha de deslizamiento
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.End
-                    ) {
-                        Text(
-                            text = item.ganancia,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Ganancia",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Default.ChevronRight,
-                        contentDescription = "Deslizar",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                        modifier = Modifier.size(24.dp)
+            Divider()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Tiempo",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
+                    Text(
+                        text = item.tiempoTrabajo,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Cosecha",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                    Text(
+                        text = "${item.cosechaTotal}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    onClick = onShowDetails,
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Detalles",
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Ver Detalles")
                 }
             }
         }
     }
+}
 
-    // Diálogo de detalles
-    if (showDetails) {
-        AlertDialog(
-            onDismissRequest = { showDetails = false },
-            title = {
-                Text(
-                    text = item.fecha.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("es", "ES")),
-                    style = MaterialTheme.typography.titleLarge
-                )
-            },
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Horario
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = "Horario",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Column {
-                            Text(
-                                text = "Inicio: ${item.horaInicio.format(DateTimeFormatter.ofPattern("HH:mm"))}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = "Cierre: ${item.horaCierre.format(DateTimeFormatter.ofPattern("HH:mm"))}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    }
-                    Divider()
-                    // Tiempo de trabajo
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Timer,
-                            contentDescription = "Tiempo",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Tiempo de trabajo: ${item.tiempoTrabajo}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    // Cosecha total
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.LocalFlorist,
-                            contentDescription = "Cosecha",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Cosecha total: ${item.cosechaTotal}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showDetails = false }) {
-                    Text("Cerrar")
-                }
-            }
+fun getHistorialItems(): List<HistorialItem> {
+    val currentDate = LocalDate.now()
+    val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val dayFormatter = DateTimeFormatter.ofPattern("EEEE")
+
+    return (0..6).map { daysAgo ->
+        val date = currentDate.minusDays(daysAgo.toLong())
+        val startTime = date.atTime(8, 0)
+        val endTime = date.atTime(16, 0)
+        val duration = "8h 00m"
+        val cosecha = (20..50).random()
+        val ganancia = cosecha * 2.5
+
+        HistorialItem(
+            fecha = date,
+            horaInicio = startTime.toLocalTime(),
+            horaCierre = endTime.toLocalTime(),
+            tiempoTrabajo = duration,
+            cosechaTotal = "${cosecha} kg",
+            ganancia = "$${ganancia}"
+        )
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun HistorialScreenPreview() {
+    MaterialTheme {
+        val navController = rememberNavController()
+        HistorialScreen(navController = navController)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HistorialCardPreview() {
+    MaterialTheme {
+        HistorialCard(
+            item = HistorialItem(
+                fecha = LocalDate.now(),
+                horaInicio = LocalTime.of(8, 0),
+                horaCierre = LocalTime.of(16, 0),
+                tiempoTrabajo = "8h 00m",
+                cosechaTotal = "30 kg",
+                ganancia = "$75.00"
+            ),
+            onShowDetails = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DetailRowPreview() {
+    MaterialTheme {
+        DetailRow(
+            icon = Icons.Default.CalendarToday,
+            label = "Fecha",
+            value = "01/01/2024"
         )
     }
 } 
